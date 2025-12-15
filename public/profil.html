@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link">Beranda</a>
+                <a href="/dashboard" class="nav-link">Menu</a>
+                <a href="/profil" class="nav-link active">Profil</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="profil-container">
+        <div class="container">
+            <h2>Profil Saya</h2>
+
+            <!-- Informasi Personal -->
+            <div class="profil-card">
+                <div class="profil-header">
+                    <div class="profil-avatar">
+                        <i data-feather="user"></i>
+                    </div>
+                    <h3>Informasi Personal</h3>
+                </div>
+
+                <div class="profil-info">
+                    <div class="info-row">
+                        <span class="info-label">Nama Lengkap:</span>
+                        <span id="profilName" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Nomor Induk Kependudukan (NIK):</span>
+                        <span id="profilNIK" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tempat Lahir:</span>
+                        <span id="profilPlaceOfBirth" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tanggal Lahir:</span>
+                        <span id="profilDateOfBirth" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Jenis Kelamin:</span>
+                        <span id="profilGender" class="info-value"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Alamat -->
+            <div class="profil-card">
+                <div class="profil-header">
+                    <h3>
+                        <span class="icon-heading">
+                            <i data-feather="map-pin"></i>
+                        </span>
+                        Informasi Alamat
+                    </h3>
+                </div>
+
+                <div class="profil-info">
+                    <div class="info-row">
+                        <span class="info-label">Alamat:</span>
+                        <span id="profilAddress" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">RT:</span>
+                        <span id="profilRT" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">RW:</span>
+                        <span id="profilRW" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Kelurahan:</span>
+                        <span id="profilKelurahan" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Kecamatan:</span>
+                        <span id="profilKecamatan" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Kota/Kabupaten:</span>
+                        <span id="profilCity" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Provinsi:</span>
+                        <span id="profilProvince" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Kode Pos:</span>
+                        <span id="profilPostalCode" class="info-value"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Kontak (Editable) -->
+            <div class="profil-card">
+                <div class="profil-header">
+                    <h3>
+                        <span class="icon-heading">
+                            <i data-feather="phone"></i>
+                        </span>
+                        Informasi Kontak
+                    </h3>
+                    <button id="editContactBtn" class="btn btn-primary btn-small">Edit</button>
+                </div>
+
+                <div id="contactView" class="profil-info">
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span id="profilEmail" class="info-value"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Nomor Telepon:</span>
+                        <span id="profilPhone" class="info-value"></span>
+                    </div>
+                </div>
+
+                <form id="contactEditForm" class="profil-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="editEmail">Email <span class="required">*</span></label>
+                        <input 
+                            type="email" 
+                            id="editEmail" 
+                            name="email"
+                            placeholder="contoh@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPhone">Nomor Telepon <span class="required">*</span></label>
+                        <input 
+                            type="tel" 
+                            id="editPhone" 
+                            name="phone"
+                            placeholder="08xxxxxxxxxx atau +628xxxxxxxxxx"
+                            required
+                        >
+                        <small class="form-hint">Format: 08xxxxxxxxxx atau +628xxxxxxxxxx</small>
+                    </div>
+
+                    <div id="contactError" class="error-message" style="display: none;"></div>
+                    <div id="contactSuccess" class="success-message" style="display: none;"></div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" id="cancelContactBtn" class="btn btn-secondary">Batal</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Ubah Password -->
+            <div class="profil-card">
+                <div class="profil-header">
+                    <h3>
+                        <span class="icon-heading">
+                            <i data-feather="lock"></i>
+                        </span>
+                        Ubah Password
+                    </h3>
+                    <button id="editPasswordBtn" class="btn btn-primary btn-small">Edit Password</button>
+                </div>
+
+                <div id="passwordView" class="profil-info">
+                    <p class="info-hint">Gunakan tombol "Edit Password" untuk mengubah password Anda</p>
+                </div>
+
+                <form id="passwordEditForm" class="profil-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="currentPassword">Password Lama <span class="required">*</span></label>
+                        <div style="position: relative;">
+                            <input 
+                                type="password" 
+                                id="currentPassword" 
+                                name="current_password"
+                                placeholder="Masukkan password lama"
+                                required
+                                style="padding-right: 45px; width: 100%;"
+                            >
+                            <button 
+                                type="button" 
+                                id="toggleCurrentPassword" 
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); padding: 5px 8px;"
+                            >
+                                <span>Tampilkan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Password Baru <span class="required">*</span></label>
+                        <div style="position: relative;">
+                            <input 
+                                type="password" 
+                                id="newPassword" 
+                                name="new_password"
+                                placeholder="Minimal 6 karakter"
+                                required
+                                minlength="6"
+                                style="padding-right: 45px; width: 100%;"
+                            >
+                            <button 
+                                type="button" 
+                                id="toggleNewPassword" 
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); padding: 5px 8px;"
+                            >
+                                <span>Tampilkan</span>
+                            </button>
+                        </div>
+                        <small class="form-hint">Password minimal 6 karakter</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Konfirmasi Password Baru <span class="required">*</span></label>
+                        <div style="position: relative;">
+                            <input 
+                                type="password" 
+                                id="confirmPassword" 
+                                name="confirm_password"
+                                placeholder="Ulangi password baru"
+                                required
+                                minlength="6"
+                                style="padding-right: 45px; width: 100%;"
+                            >
+                            <button 
+                                type="button" 
+                                id="toggleConfirmPassword" 
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); padding: 5px 8px;"
+                            >
+                                <span>Tampilkan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="passwordError" class="error-message" style="display: none;"></div>
+                    <div id="passwordSuccess" class="success-message" style="display: none;"></div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" id="cancelPasswordBtn" class="btn btn-secondary">Batal</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="profil-actions">
+                <a href="/home" class="btn btn-secondary">Kembali ke Beranda</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Format gender
+        function formatGender(gender) {
+            if (!gender) return '-';
+            return gender === 'laki-laki' ? 'Laki-Laki' : 'Perempuan';
+        }
+
+        // Set value helper
+        function setValue(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = value || '-';
+            }
+        }
+
+        // Load user profile
+        async function loadProfile() {
+            try {
+                // Check auth first
+                const authUser = await checkAuth();
+                if (!authUser) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Get full profile data
+                const response = await fetch('/api/profile');
+                const data = await response.json();
+                
+                if (!data.user) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const user = data.user;
+                currentUser = user;
+
+                // Set personal info
+                setValue('profilName', user.full_name);
+                setValue('profilNIK', user.nik);
+                setValue('profilPlaceOfBirth', user.place_of_birth);
+                setValue('profilDateOfBirth', formatDate(user.date_of_birth));
+                setValue('profilGender', formatGender(user.gender));
+
+                // Set address info
+                setValue('profilAddress', user.address);
+                setValue('profilRT', user.rt);
+                setValue('profilRW', user.rw);
+                setValue('profilKelurahan', user.kelurahan);
+                setValue('profilKecamatan', user.kecamatan);
+                setValue('profilCity', user.city);
+                setValue('profilProvince', user.province);
+                setValue('profilPostalCode', user.postal_code);
+
+                // Set contact info
+                setValue('profilEmail', user.email);
+                setValue('profilPhone', user.phone);
+
+                // Set form values
+                document.getElementById('editEmail').value = user.email || '';
+                document.getElementById('editPhone').value = user.phone || '';
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Toggle contact edit form
+        document.getElementById('editContactBtn').addEventListener('click', () => {
+            document.getElementById('contactView').style.display = 'none';
+            document.getElementById('contactEditForm').style.display = 'block';
+            document.getElementById('editContactBtn').style.display = 'none';
+        });
+
+        document.getElementById('cancelContactBtn').addEventListener('click', () => {
+            document.getElementById('contactView').style.display = 'block';
+            document.getElementById('contactEditForm').style.display = 'none';
+            document.getElementById('editContactBtn').style.display = 'inline-block';
+            document.getElementById('contactError').style.display = 'none';
+            document.getElementById('contactSuccess').style.display = 'none';
+            // Reset form
+            if (currentUser) {
+                document.getElementById('editEmail').value = currentUser.email || '';
+                document.getElementById('editPhone').value = currentUser.phone || '';
+            }
+        });
+
+        // Submit contact edit form
+        document.getElementById('contactEditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('contactError');
+            const successDiv = document.getElementById('contactSuccess');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, phone })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = data.message || 'Kontak berhasil diperbarui';
+                    successDiv.style.display = 'block';
+                    
+                    // Update display values
+                    setValue('profilEmail', email);
+                    setValue('profilPhone', phone);
+                    
+                    // Reload full profile data
+                    const profileResponse = await fetch('/api/profile');
+                    const profileData = await profileResponse.json();
+                    if (profileData.user) {
+                        currentUser = profileData.user;
+                    }
+
+                    setTimeout(() => {
+                        document.getElementById('contactView').style.display = 'block';
+                        document.getElementById('contactEditForm').style.display = 'none';
+                        document.getElementById('editContactBtn').style.display = 'inline-block';
+                        successDiv.style.display = 'none';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error || 'Gagal memperbarui kontak';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Toggle password edit form
+        document.getElementById('editPasswordBtn').addEventListener('click', () => {
+            document.getElementById('passwordView').style.display = 'none';
+            document.getElementById('passwordEditForm').style.display = 'block';
+            document.getElementById('editPasswordBtn').style.display = 'none';
+        });
+
+        document.getElementById('cancelPasswordBtn').addEventListener('click', () => {
+            document.getElementById('passwordView').style.display = 'block';
+            document.getElementById('passwordEditForm').style.display = 'none';
+            document.getElementById('editPasswordBtn').style.display = 'inline-block';
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('passwordSuccess').style.display = 'none';
+            // Reset form
+            document.getElementById('passwordEditForm').reset();
+        });
+
+        // Submit password edit form
+        document.getElementById('passwordEditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('passwordError');
+            const successDiv = document.getElementById('passwordSuccess');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = 'Password baru dan konfirmasi password tidak cocok';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = data.message || 'Password berhasil diperbarui';
+                    successDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        document.getElementById('passwordView').style.display = 'block';
+                        document.getElementById('passwordEditForm').style.display = 'none';
+                        document.getElementById('editPasswordBtn').style.display = 'inline-block';
+                        successDiv.style.display = 'none';
+                        document.getElementById('passwordEditForm').reset();
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error || 'Gagal memperbarui password';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Toggle password visibility
+        function setupPasswordToggle(toggleId, inputId) {
+            const toggle = document.getElementById(toggleId);
+            const input = document.getElementById(inputId);
+            toggle.addEventListener('click', () => {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                toggle.querySelector('span').textContent = type === 'password' ? 'Tampilkan' : 'Sembunyikan';
+            });
+        }
+
+        setupPasswordToggle('toggleCurrentPassword', 'currentPassword');
+        setupPasswordToggle('toggleNewPassword', 'newPassword');
+        setupPasswordToggle('toggleConfirmPassword', 'confirmPassword');
+
+        // Format phone input
+        document.getElementById('editPhone').addEventListener('input', (e) => {
+            formatPhone(e.target);
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // Initialize
+        loadProfile();
+    </script>
+</body>
+</html>

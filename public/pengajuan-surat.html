@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengajuan Surat - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link active">Beranda</a>
+                <a href="/dashboard" class="nav-link">Menu</a>
+                <a href="/profil" class="nav-link">Profil</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="form-container">
+        <div class="container">
+            <div class="form-header">
+                <h2>Pengajuan Surat</h2>
+                <p>Pilih jenis surat yang ingin Anda ajukan</p>
+            </div>
+
+            <div class="letter-types-grid">
+                <a class="letter-type-card" href="/form-surat?type=death">
+                    <div class="letter-icon icon-red">
+                        <i data-feather="alert-triangle"></i>
+                    </div>
+                    <h3>Surat Laporan Kematian</h3>
+                    <p>Untuk melaporkan kematian anggota keluarga</p>
+                </a>
+
+                <a class="letter-type-card" href="/form-surat?type=birth">
+                    <div class="letter-icon icon-amber">
+                        <i data-feather="smile"></i>
+                    </div>
+                    <h3>Surat Laporan Kelahiran</h3>
+                    <p>Untuk melaporkan kelahiran anggota keluarga</p>
+                </a>
+
+                <a class="letter-type-card" href="/form-surat?type=mutation">
+                    <div class="letter-icon icon-teal">
+                        <i data-feather="shuffle"></i>
+                    </div>
+                    <h3>Surat Laporan Mutasi</h3>
+                    <p>Untuk melaporkan perubahan data kependudukan</p>
+                </a>
+
+                <a class="letter-type-card" href="/form-surat?type=other">
+                    <div class="letter-icon icon-slate">
+                        <i data-feather="file-plus"></i>
+                    </div>
+                    <h3>Jenis Surat Lainnya</h3>
+                    <p>Untuk jenis surat keterangan lainnya</p>
+                </a>
+            </div>
+
+            <div class="back-link">
+                <a href="/home" class="btn btn-secondary">Kembali ke Beranda</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/script.js"></script>
+    <script>
+        // Check authentication
+        fetch('/api/user')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.user) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(() => {
+                window.location.href = '/login';
+            });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
+

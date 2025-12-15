@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Iuran Kas RT - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link">Beranda</a>
+                <a href="/dashboard" class="nav-link active">Menu</a>
+                <a href="/profil" class="nav-link">Profil</a>
+                <a href="/admin" class="nav-link" id="adminLink" style="display: none;">Admin</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="form-container">
+        <div class="container">
+            <div class="form-header">
+                <h2>Pembayaran Iuran Kas RT</h2>
+                <p>Lakukan pembayaran iuran kas RT Anda di sini</p>
+            </div>
+
+            <!-- Financial Summary Section -->
+            <div class="financial-summary-section">
+                <h3>
+                    <span class="icon-heading">
+                        <i data-feather="bar-chart-2"></i>
+                    </span>
+                    Transparansi Kas RT
+                </h3>
+                <div class="financial-cards">
+                    <div class="financial-card income">
+                        <div class="financial-icon">
+                            <i data-feather="trending-up"></i>
+                        </div>
+                        <div class="financial-info">
+                            <h4>Total Pemasukan</h4>
+                            <p class="financial-amount" id="totalIncome">Rp 0</p>
+                            <small id="paymentCount">0 pembayaran</small>
+                        </div>
+                    </div>
+                    <div class="financial-card expense">
+                        <div class="financial-icon">
+                            <i data-feather="trending-down"></i>
+                        </div>
+                        <div class="financial-info">
+                            <h4>Total Pengeluaran</h4>
+                            <p class="financial-amount" id="totalExpense">Rp 0</p>
+                            <small id="expenseCount">0 pengeluaran</small>
+                        </div>
+                    </div>
+                    <div class="financial-card balance">
+                        <div class="financial-icon">
+                            <i data-feather="wallet"></i>
+                        </div>
+                        <div class="financial-info">
+                            <h4>Saldo Kas</h4>
+                            <p class="financial-amount" id="totalBalance">Rp 0</p>
+                            <small>Pemasukan - Pengeluaran</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <h4>Grafik Pemasukan & Pengeluaran (6 Bulan Terakhir)</h4>
+                    <canvas id="financialChart"></canvas>
+                </div>
+            </div>
+
+            <form id="paymentForm" class="payment-form">
+                <div class="form-section">
+                    <h3>Informasi Pembayaran</h3>
+                    
+                    <div class="form-group">
+                        <label for="amount">Nominal Pembayaran (Rp) <span class="required">*</span></label>
+                        <input 
+                            type="number" 
+                            id="amount" 
+                            name="amount" 
+                            placeholder="Masukkan nominal pembayaran"
+                            required
+                            min="1000"
+                            step="1000"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="period">Bulan/Periode Iuran <span class="required">*</span></label>
+                        <input 
+                            type="month" 
+                            id="period" 
+                            name="period" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paymentMethod">Metode Pembayaran <span class="required">*</span></label>
+                        <select id="paymentMethod" name="payment_method" required>
+                            <option value="">Pilih metode pembayaran</option>
+                            <option value="cash">Tunai</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+
+                    <div id="transferInfo" class="transfer-info" style="display: none;">
+                        <p class="transfer-info__title">Pembayaran Transfer</p>
+                        <p>
+                            Silakan transfer ke rekening <strong>7495026787 - Bank BCA</strong> a.n <strong>Fathur Ramadhan</strong>
+                            atau gunakan QRIS berikut:
+                        </p>
+                        <div class="transfer-info__qris">
+                            <img src="/assets/tinggi kiris.jpeg" alt="QRIS Fathur Shop">
+                        </div>
+                        <small>Unggah bukti transfer setelah melakukan pembayaran.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="proof">Bukti Pembayaran <span class="required">*</span></label>
+                        <input 
+                            type="file" 
+                            id="proof" 
+                            name="proof"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            required
+                        >
+                        <small>Upload bukti pembayaran (Format: PDF, JPG, PNG - Maks. 5MB)</small>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="successMessage" class="success-message" style="display: none;"></div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/home'">Batal</button>
+                    <button type="submit" class="btn btn-primary">Bayar</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        let financialChart = null;
+
+        // Check authentication
+        fetch('/api/user')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.user) {
+                    window.location.href = '/login';
+                } else {
+                    loadFinancialData();
+                }
+            })
+            .catch(() => {
+                window.location.href = '/login';
+            });
+
+        // Load financial summary
+        async function loadFinancialData() {
+            try {
+                // Load summary
+                const summaryRes = await fetch('/api/financial/summary');
+                const summaryData = await summaryRes.json();
+                
+                if (summaryRes.ok) {
+                    document.getElementById('totalIncome').textContent = formatCurrency(summaryData.income);
+                    document.getElementById('totalExpense').textContent = formatCurrency(summaryData.expenses);
+                    document.getElementById('totalBalance').textContent = formatCurrency(summaryData.balance);
+                    document.getElementById('paymentCount').textContent = `${summaryData.payment_count} pembayaran`;
+                    document.getElementById('expenseCount').textContent = `${summaryData.expense_count} pengeluaran`;
+                }
+
+                // Load chart data
+                const chartRes = await fetch('/api/financial/chart?months=6');
+                const chartData = await chartRes.json();
+                
+                if (chartRes.ok) {
+                    renderChart(chartData);
+                }
+            } catch (error) {
+                console.error('Error loading financial data:', error);
+            }
+        }
+
+        // Render chart
+        function renderChart(data) {
+            const ctx = document.getElementById('financialChart');
+            if (!ctx) return;
+
+            // Create month labels for last 6 months
+            const months = [];
+            const incomeData = [];
+            const expenseData = [];
+            
+            const now = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthLabel = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'short' });
+                months.push(monthLabel);
+                
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const income = data.income.find(item => item.month === monthKey);
+                const expense = data.expenses.find(item => item.month === monthKey);
+                
+                incomeData.push(parseFloat(income?.income || 0));
+                expenseData.push(parseFloat(expense?.expenses || 0));
+            }
+
+            if (financialChart) {
+                financialChart.destroy();
+            }
+
+            financialChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Pemasukan',
+                            data: incomeData,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: expenseData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': Rp ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID').format(amount);
+        }
+
+        // Set default period to current month
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('period').value = `${now.getFullYear()}-${month}`;
+        const paymentMethodField = document.getElementById('paymentMethod');
+        const transferInfo = document.getElementById('transferInfo');
+
+        function toggleTransferInfo() {
+            if (!paymentMethodField) return;
+            if (paymentMethodField.value === 'transfer') {
+                transferInfo.style.display = 'block';
+            } else {
+                transferInfo.style.display = 'none';
+            }
+        }
+        paymentMethodField.addEventListener('change', toggleTransferInfo);
+        toggleTransferInfo();
+
+        // Handle form submission
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('amount', document.getElementById('amount').value);
+            formData.append('period', document.getElementById('period').value);
+            formData.append('payment_method', document.getElementById('paymentMethod').value);
+            formData.append('proof', document.getElementById('proof').files[0]);
+
+            try {
+                const response = await fetch('/api/payments', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = 'Pembayaran berhasil! Invoice akan segera tersedia.';
+                    successDiv.style.display = 'block';
+                    document.getElementById('paymentForm').reset();
+                    // Set default period again
+                    const now = new Date();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    document.getElementById('period').value = `${now.getFullYear()}-${month}`;
+                    toggleTransferInfo();
+                    
+                    setTimeout(() => {
+                        window.location.href = '/home';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error || 'Gagal melakukan pembayaran';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
+

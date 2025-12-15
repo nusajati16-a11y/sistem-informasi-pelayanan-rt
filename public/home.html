@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Beranda - Sistem Informasi RT</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://unpkg.com/feather-icons"></script>
+    </head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link active">Beranda</a>
+                <a href="/dashboard" class="nav-link">Menu</a>
+                <a href="/profil" class="nav-link">Profil</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="home-container">
+        <div class="container">
+            <div class="home-header">
+                <h2>Beranda</h2>
+                <p>Selamat datang, <span id="userName">Warga</span>!</p>
+            </div>
+
+                <section class="menu-section">
+                    <h3>Menu Layanan</h3>
+                    <div class="service-grid">
+                        <div class="service-card">
+                            <div class="service-icon icon-blue">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                                    <path d="M14 2v6h6"/>
+                                    <path d="M9 13h6"/>
+                                    <path d="M9 17h6"/>
+                                </svg>
+                            </div>
+                            <h4>Pengajuan Surat</h4>
+                            <p>Ajukan berbagai jenis surat keterangan yang diperlukan.</p>
+                            <a href="/pengajuan-surat" class="btn btn-primary">Pilih</a>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-indigo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                    <line x1="7" y1="16" x2="9" y2="16"/>
+                                    <line x1="11" y1="16" x2="13" y2="16"/>
+                                </svg>
+                            </div>
+                            <h4>Pembayaran Iuran Kas RT</h4>
+                            <p>Lakukan pembayaran iuran kas RT secara tunai atau transfer.</p>
+                            <a href="/pembayaran-iuran" class="btn btn-primary">Pilih</a>
+                        </div>
+                    </div>
+                </section>
+
+            <div class="home-content">
+                    <div class="news-section">
+                        <div class="section-header">
+                            <h3>
+                                <span class="icon-heading">
+                                    <i data-feather="rss"></i>
+                                </span>
+                                Berita & Pengumuman
+                            </h3>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-type="all">Semua</button>
+                            <button class="filter-tab" data-type="news">Berita</button>
+                            <button class="filter-tab" data-type="announcement">Pengumuman</button>
+                        </div>
+                    </div>
+                    <div id="newsList" class="news-list">
+                        <div class="loading">Memuat berita...</div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <h4>Notifikasi</h4>
+                        <div id="notificationsList" class="notifications-list">
+                            <p class="empty-message">Tidak ada notifikasi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notifikasi</h3>
+                <span class="close" id="closeNotificationModal">&times;</span>
+            </div>
+            <div class="modal-body" id="notificationModalBody">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Mobile Menu Toggle (already in script.js, but keep for compatibility)
+        let currentUser = null;
+        let currentFilter = 'all';
+
+        // Check authentication and load user (with full profile name)
+        async function init() {
+            try {
+                // 1. Cek sesi singkat
+                const sessionRes = await fetch('/api/user');
+                const sessionData = await sessionRes.json();
+                if (!sessionData.user) {
+                    window.location.href = '/login';
+                    return;
+                }
+                currentUser = sessionData.user;
+
+                // 2. Ambil profil lengkap untuk memastikan nama selalu sesuai dengan profil
+                try {
+                    const profileRes = await fetch('/api/profile');
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        if (profileData.user) {
+                            currentUser = { ...currentUser, ...profileData.user };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Gagal memuat profil lengkap, gunakan data sesi saja');
+                }
+
+                const nameEl = document.getElementById('userName');
+                if (nameEl) {
+                    const fullName = currentUser.full_name && currentUser.full_name.toString().trim();
+                    const nik = currentUser.nik && currentUser.nik.toString().trim();
+                    // Utamakan nama lengkap profil, jika kosong gunakan NIK, dan hanya terakhir sekali fallback ke "Warga"
+                    nameEl.textContent = fullName || nik || 'Warga';
+                }
+
+                loadNews();
+                loadNotifications();
+                setInterval(loadNotifications, 30000); // Check every 30 seconds
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        // Load news and announcements
+        async function loadNews() {
+            try {
+                const response = await fetch(`/api/news?type=${currentFilter}`);
+                const data = await response.json();
+                const newsList = document.getElementById('newsList');
+                
+                if (data.news && data.news.length > 0) {
+                    newsList.innerHTML = data.news.map(item => {
+                        console.log('News item:', item.title, 'image_path:', item.image_path);
+                        let imageHtml = '';
+                        if (item.image_path && item.image_path.trim() !== '') {
+                            // Clean and normalize the image path
+                            let imageSrc = item.image_path.trim();
+                            // Remove leading slashes
+                            imageSrc = imageSrc.replace(/^\/+/, '');
+                            // Ensure it starts with uploads/
+                            if (!imageSrc.startsWith('uploads/')) {
+                                imageSrc = 'uploads/' + imageSrc;
+                            }
+                            // Final path with leading slash for browser
+                            imageSrc = '/' + imageSrc;
+                            console.log('Loading image for:', item.title, 'Path:', imageSrc);
+                            imageHtml = `<div class="news-image-container">
+                                <img src="${imageSrc}" alt="${item.title}" class="news-image" 
+                                     onerror="console.error('Gambar tidak ditemukan:', '${imageSrc}'); this.parentElement.style.display='none';" 
+                                     onload="console.log('Gambar berhasil dimuat:', '${imageSrc}');">
+                            </div>`;
+                        }
+                        return `
+                        <div class="news-item ${item.type}">
+                            <div class="news-header">
+                                <span class="news-type">
+                                    <i data-feather="${item.type === 'news' ? 'file-text' : 'bell'}"></i>
+                                    <span>${item.type === 'news' ? 'Berita' : 'Pengumuman'}</span>
+                                </span>
+                                <span class="news-date">${formatDate(item.published_date)}</span>
+                            </div>
+                            <h4 class="news-title">${item.title}</h4>
+                            ${imageHtml}
+                            <p class="news-content">${item.content}</p>
+                        </div>
+                    `;
+                    }).join('');
+                    if (typeof initIcons === 'function') {
+                        initIcons();
+                    }
+                } else {
+                    newsList.innerHTML = '<div class="empty-message">Tidak ada berita atau pengumuman</div>';
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
+                document.getElementById('newsList').innerHTML = '<div class="error-message">Gagal memuat berita</div>';
+            }
+        }
+
+        // Load notifications
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications');
+                const data = await response.json();
+                const notificationsList = document.getElementById('notificationsList');
+                const badge = document.getElementById('notificationBadge');
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    // Badge is optional on this page; skip safely if not rendered
+                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
+                    if (badge) {
+                        if (unreadCount > 0) {
+                            badge.textContent = unreadCount;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    notificationsList.innerHTML = data.notifications.slice(0, 5).map(notif => `
+                        <div class="notification-item ${notif.is_read ? '' : 'unread'}" onclick="viewNotification(${notif.id}, '${notif.link || ''}')">
+                            <div class="notification-title">${notif.title}</div>
+                            <div class="notification-message">${notif.message}</div>
+                            <div class="notification-time">${formatTime(notif.created_at)}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    notificationsList.innerHTML = '<p class="empty-message">Tidak ada notifikasi</p>';
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // View notification
+        async function viewNotification(id, link) {
+            try {
+                await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+                // Always redirect to /menu when clicking notifications
+                window.location.href = '/menu';
+            } catch (error) {
+                console.error('Error viewing notification:', error);
+            }
+        }
+
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentFilter = tab.dataset.type;
+                loadNews();
+            });
+        });
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Format time
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'Baru saja';
+            if (minutes < 60) return `${minutes} menit yang lalu`;
+            if (hours < 24) return `${hours} jam yang lalu`;
+            if (days < 7) return `${days} hari yang lalu`;
+            return formatDate(dateString);
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Notification icon click (optional, only if icon exists)
+        const notificationIconEl = document.getElementById('notificationIcon');
+        if (notificationIconEl) {
+            notificationIconEl.addEventListener('click', () => {
+                window.location.href = '/home?tab=notifications';
+            });
+        }
+
+        init();
+    </script>
+
+    <footer class="footer-new">
+        <div class="container">
+            <div class="footer-new-content">
+                <div class="footer-new-section">
+                    <h3>Temukan Kami</h3>
+                    <p class="footer-description">Jl. Pendidikan No.15, Cibiru Wetan, Kec. Cileunyi, Kabupaten Bandung, Jawa Barat 40625.</p>
+                    <div class="footer-buttons">
+                        <a href="https://wa.me/6285156281900" target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                            </svg>
+                            WhatsApp
+                        </a>
+                        <a href="mailto:kampus_cibiru@upi.edu" class="btn-contact">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            Hubungi Kami
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-new-section">
+                    <h3>Kontak</h3>
+                    <div class="footer-links">
+                        <a href="https://wa.me/6285156281900" target="_blank" class="footer-link"><b>Telepon :</b> 085156281900</a>
+                        <a href="mailto:kampus_cibiru@upi.edu" class="footer-link"><b>Email :</b> kampus_cibiru@upi.edu</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-new-bottom">
+                <p>&copy; 2025 Sistem Informasi Pelayanan Terpadu RT. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

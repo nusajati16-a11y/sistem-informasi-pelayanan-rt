@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pengajuan Surat - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link active">Beranda</a>
+                <a href="/dashboard" class="nav-link">Menu</a>
+                <a href="/profil" class="nav-link">Profil</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="form-container">
+        <div class="container">
+            <div class="form-header">
+                <h2 id="formTitle">Form Pengajuan Surat</h2>
+                <p id="formSubtitle">Isi form di bawah ini untuk mengajukan surat</p>
+            </div>
+
+            <form id="letterForm" class="letter-form">
+                <div class="form-section">
+                    <h3>Data Diri (Otomatis dari Registrasi)</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>NIK</label>
+                            <input type="text" id="nik" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" id="fullName" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Tempat, Tanggal Lahir</label>
+                            <input type="text" id="birthInfo" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Kelamin</label>
+                            <input type="text" id="gender" readonly>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Alamat</label>
+                            <textarea id="address" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="letterSpecificSection">
+                    <h3 id="specificSectionTitle">Detail Pengajuan</h3>
+                    <p id="specificSectionSubtitle" class="section-note"></p>
+                    <div id="additionalFields" class="form-grid"></div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Informasi Pengajuan</h3>
+                    <div class="form-group">
+                        <label for="purpose">Tujuan Pengajuan <span class="required">*</span></label>
+                        <textarea 
+                            id="purpose" 
+                            name="purpose" 
+                            placeholder="Jelaskan tujuan pengajuan surat ini"
+                            required
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="attachment"><span id="attachmentLabelText">Lampiran (Opsional)</span></label>
+                        <input 
+                            type="file" 
+                            id="attachment" 
+                            name="attachment"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        >
+                        <small id="attachmentHint">Format yang didukung: PDF, JPG, PNG, DOC, DOCX (Maks. 5MB)</small>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="successMessage" class="success-message" style="display: none;"></div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/pengajuan-surat'">Batal</button>
+                    <button type="submit" class="btn btn-primary">Ajukan Surat</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/script.js"></script>
+    <script>
+        (() => {
+            const letterConfigs = window.LETTER_DETAILS_CONFIG || {};
+            const getLetterType = () => {
+                const paramsType = new URLSearchParams(window.location.search).get('type');
+                if (paramsType) return paramsType.toLowerCase();
+                const parts = window.location.pathname.split('/').filter(Boolean);
+                return parts.length ? parts[parts.length - 1].toLowerCase() : null;
+            };
+
+            const letterType = getLetterType();
+            if (!letterType || !letterConfigs[letterType]) {
+                window.location.replace('/pengajuan-surat');
+                return;
+            }
+
+            const dom = {
+                form: document.getElementById('letterForm'),
+                title: document.getElementById('formTitle'),
+                subtitle: document.getElementById('formSubtitle'),
+                sectionTitle: document.getElementById('specificSectionTitle'),
+                sectionSubtitle: document.getElementById('specificSectionSubtitle'),
+                additionalFields: document.getElementById('additionalFields'),
+                detailsSection: document.getElementById('letterSpecificSection'),
+                error: document.getElementById('errorMessage'),
+                success: document.getElementById('successMessage'),
+                purpose: document.getElementById('purpose'),
+                attachment: document.getElementById('attachment'),
+                attachmentLabel: document.getElementById('attachmentLabelText'),
+                attachmentHint: document.getElementById('attachmentHint'),
+                logoutBtn: document.getElementById('logoutBtn'),
+                fields: {
+                    nik: document.getElementById('nik'),
+                    fullName: document.getElementById('fullName'),
+                    birthInfo: document.getElementById('birthInfo'),
+                    gender: document.getElementById('gender'),
+                    address: document.getElementById('address')
+                }
+            };
+
+            const defaultAttachmentHint = dom.attachmentHint ? dom.attachmentHint.textContent : '';
+            const state = {
+                config: letterConfigs[letterType],
+                user: null,
+                userDetails: null
+            };
+
+            const setValue = (el, value, fallback = '') => {
+                if (el) el.value = value || fallback;
+            };
+
+            const showMessage = (el, message) => {
+                if (!el) return;
+                el.textContent = message;
+                el.style.display = message ? 'block' : 'none';
+            };
+
+            const redirectToLogin = () => window.location.replace('/login');
+
+            const fetchJson = async (url) => {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            };
+
+            const formatDateOnly = (value) => {
+                if (!value) return '';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return value;
+                return date.toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            };
+            init();
+
+            async function init() {
+                try {
+                    state.user = await checkAuth();
+                    if (!state.user) return redirectToLogin();
+
+                    if (dom.logoutBtn) dom.logoutBtn.addEventListener('click', logout);
+                    dom.form?.addEventListener('submit', handleSubmit);
+
+                    const detail = await fetchJson(`/api/user/${state.user.id}`);
+                    state.userDetails = detail.user || {};
+                    hydrateUserInfo();
+                    hydrateCopy();
+                    renderAdditionalFields();
+                } catch (error) {
+                    redirectToLogin();
+                }
+            }
+
+            function hydrateUserInfo() {
+                const user = state.userDetails || {};
+                const birthDate = formatDateOnly(user.date_of_birth);
+                const birth = [user.place_of_birth, birthDate].filter(Boolean).join(', ') || '-';
+                const address = [
+                    user.address,
+                    user.rt && `RT ${user.rt}`,
+                    user.rw && `RW ${user.rw}`,
+                    user.kelurahan,
+                    user.kecamatan,
+                    user.city,
+                    user.province,
+                    user.postal_code
+                ].filter(Boolean).join(', ') || '-';
+
+                setValue(dom.fields.nik, user.nik || '-');
+                setValue(dom.fields.fullName, user.full_name || '-');
+                setValue(dom.fields.birthInfo, birth);
+                setValue(dom.fields.gender, user.gender || '-');
+                setValue(dom.fields.address, address);
+            }
+
+            function hydrateCopy() {
+                if (dom.title) {
+                    dom.title.textContent = `Form ${window.getLetterTypeName ? getLetterTypeName(letterType) : 'Pengajuan Surat'}`;
+                }
+                if (dom.subtitle && state.config.sectionSubtitle) {
+                    dom.subtitle.textContent = state.config.sectionSubtitle;
+                }
+            }
+
+            function renderAdditionalFields() {
+                if (!state.config || !dom.additionalFields) return;
+
+                const fields = Array.isArray(state.config.fields) ? state.config.fields : [];
+                const hasFields = fields.length > 0;
+
+                dom.sectionTitle.textContent = state.config.sectionTitle || '';
+                dom.sectionSubtitle.textContent = state.config.sectionSubtitle || '';
+                dom.additionalFields.innerHTML = hasFields ? fields.map(renderField).join('') : '';
+                if (dom.detailsSection) {
+                    dom.detailsSection.style.display = hasFields ? 'block' : 'none';
+                }
+                updateAttachmentRequirement();
+            }
+
+            function renderField(field) {
+                const requiredSpan = field.required ? ' <span class="required">*</span>' : '';
+                const requiredAttr = field.required ? 'required' : '';
+                const fullWidthClass = field.fullWidth ? ' full-width' : '';
+                const attrs = field.attrs ? Object.entries(field.attrs).map(([k, v]) => `${k}="${v}"`).join(' ') : '';
+                const placeholder = field.placeholder ? `placeholder="${field.placeholder}"` : '';
+                const label = `<label for="${field.id}">${field.label}${requiredSpan}</label>`;
+
+                if (field.type === 'textarea') {
+                    return `
+                        <div class="form-group${fullWidthClass}">
+                            ${label}
+                            <textarea id="${field.id}" ${requiredAttr} ${attrs} ${placeholder}></textarea>
+                        </div>
+                    `;
+                }
+
+                if (field.type === 'select') {
+                    const options = (field.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join('');
+                    return `
+                        <div class="form-group${fullWidthClass}">
+                            ${label}
+                            <select id="${field.id}" ${requiredAttr} ${attrs}>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="form-group${fullWidthClass}">
+                        ${label}
+                        <input type="${field.type || 'text'}" id="${field.id}" ${requiredAttr} ${attrs} ${placeholder}>
+                    </div>
+                `;
+            }
+
+            function collectDetails() {
+                if (!state.config) return {};
+                const fields = Array.isArray(state.config.fields) ? state.config.fields : [];
+                return fields.reduce((acc, field) => {
+                    const element = document.getElementById(field.id);
+                    acc[field.id] = element ? element.value.trim() : '';
+                    return acc;
+                }, {});
+            }
+
+            function updateAttachmentRequirement() {
+                if (!dom.attachment || !dom.attachmentLabel || !dom.attachmentHint) return;
+                const required = !!state.config.attachmentRequired;
+                dom.attachment.toggleAttribute('required', required);
+                dom.attachmentLabel.textContent = required ? 'Lampiran Surat Keterangan/Bukti (Wajib)' : 'Lampiran (Opsional)';
+                dom.attachmentHint.textContent = state.config.attachmentHint || defaultAttachmentHint;
+            }
+
+            async function handleSubmit(event) {
+                event.preventDefault();
+                showMessage(dom.error, '');
+                showMessage(dom.success, '');
+
+                const formData = new FormData();
+                formData.append('letter_type', letterType);
+                formData.append('purpose', dom.purpose ? dom.purpose.value.trim() : '');
+                formData.append('details', JSON.stringify(collectDetails()));
+
+                const attachmentFile = dom.attachment?.files?.[0];
+                if (attachmentFile) formData.append('attachment', attachmentFile);
+
+                try {
+                    const response = await fetch('/api/letter-applications', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage(dom.success, `Pengajuan berhasil! ID Pengajuan: ${data.application_id}`);
+                        dom.form.reset();
+                        hydrateUserInfo();
+                        renderAdditionalFields();
+                        setTimeout(() => window.location.replace('/home'), 2000);
+                    } else {
+                        showMessage(dom.error, data.error || 'Gagal mengajukan surat');
+                    }
+                } catch (error) {
+                    showMessage(dom.error, 'Terjadi kesalahan. Silakan coba lagi.');
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
+

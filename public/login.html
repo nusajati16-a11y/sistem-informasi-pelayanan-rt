@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="nav-link">Beranda</a>
+                <a href="/login" class="nav-link active">Login</a>
+                <a href="/register" class="nav-link btn-primary">Daftar</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Masuk ke Akun</h2>
+            <p class="auth-subtitle">Gunakan NIK dan password untuk login</p>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="nik">Nomor Induk Kependudukan (NIK)</label>
+                    <input 
+                        type="text" 
+                        id="nik" 
+                        name="nik" 
+                        placeholder="Masukkan NIK (16 digit)"
+                        required
+                        maxlength="16"
+                        pattern="[0-9]{16}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Masukkan password"
+                            required
+                            style="padding-right: 45px; width: 100%;"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword" 
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); padding: 5px 8px; font-weight: 500;"
+                            aria-label="Toggle password visibility"
+                        >
+                            <span id="togglePasswordText">Tampilkan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="successMessage" class="success-message" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Belum punya akun? <a href="/register">Daftar di sini</a></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is already logged in
+        fetch('/api/user')
+            .then(res => {
+                // Only parse JSON if response is OK (200)
+                if (res.ok) {
+                    return res.json();
+                }
+                // If 401 or other error, return null (user not logged in)
+                return null;
+            })
+            .then(data => {
+                if (data && data.user) {
+                    // Redirect admin to /admin, other users to /home
+                    if (data.user.role === 'admin') {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/home';
+                    }
+                }
+            })
+            .catch(() => {
+                // Silently ignore errors (user is not logged in)
+            });
+
+        // Toggle password visibility
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const togglePasswordText = document.getElementById('togglePasswordText');
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePasswordText.textContent = type === 'password' ? 'Tampilkan' : 'Sembunyikan';
+        });
+
+        // Handle login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const nik = document.getElementById('nik').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nik, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = data.message;
+                    successDiv.style.display = 'block';
+                    // Redirect admin to /admin, other users to /home
+                    setTimeout(() => {
+                        if (data.user && data.user.role === 'admin') {
+                            window.location.href = '/admin';
+                        } else {
+                            window.location.href = '/home';
+                        }
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
+

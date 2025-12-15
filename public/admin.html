@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Sistem Informasi RT</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SI Pelayanan RT</h1>
+            </div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/home" class="nav-link">Beranda</a>
+                <a href="/admin" class="nav-link active">Admin</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-container">
+        <div class="container">
+            <div class="admin-header">
+                <h2>Panel Administrator</h2>
+                <p>Kelola berita, pengumuman, dan pengajuan surat</p>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" data-tab="news">Berita & Pengumuman</button>
+                <button class="admin-tab-btn" data-tab="applications">Pengajuan Surat</button>
+                <button class="admin-tab-btn" data-tab="payments">Pembayaran Iuran</button>
+                <button class="admin-tab-btn" data-tab="users">Data Pengguna</button>
+            </div>
+
+            <!-- News & Announcements Tab -->
+            <div id="newsTab" class="admin-tab-content active">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h3>Tambah Berita/Pengumuman</h3>
+                    </div>
+                    <form id="newsForm" class="admin-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="newsTitle">Judul <span class="required">*</span></label>
+                            <input type="text" id="newsTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsContent">Isi <span class="required">*</span></label>
+                            <textarea id="newsContent" rows="5" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsImage">Gambar (Opsional)</label>
+                            <input type="file" id="newsImage" accept="image/*">
+                            <small class="form-hint">Format: JPG, PNG, GIF. Maksimal 5MB</small>
+                            <div id="imagePreview" style="margin-top: 1rem; display: none;">
+                                <img id="previewImg" src="" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsType">Jenis <span class="required">*</span></label>
+                            <select id="newsType" required>
+                                <option value="news">Berita</option>
+                                <option value="announcement">Pengumuman</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="publishedDate">Tanggal Publikasi <span class="required">*</span></label>
+                            <input type="date" id="publishedDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Publikasikan</button>
+                    </form>
+                </div>
+
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h3>Daftar Berita & Pengumuman</h3>
+                    </div>
+                    <div id="newsList" class="admin-list">
+                        <div class="loading">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications Tab -->
+            <div id="applicationsTab" class="admin-tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h3>Daftar Pengajuan Surat</h3>
+                    </div>
+                    <div id="applicationsList" class="admin-list">
+                        <div class="loading">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="paymentsTab" class="admin-tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h3>Riwayat Pembayaran Iuran Kas RT</h3>
+                        <div class="section-actions">
+                            <select id="paymentStatusFilter">
+                                <option value="all">Semua Status</option>
+                                <option value="pending">Menunggu</option>
+                                <option value="approved">Disetujui</option>
+                                <option value="rejected">Ditolak</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="paymentsList" class="admin-list">
+                        <div class="loading">Memuat data...</div>
+                    </div>
+                </div>
+
+                <!-- Expenses Management Section -->
+                <div class="admin-section" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <h3>
+                            <span class="icon-heading">
+                                <i data-feather="credit-card"></i>
+                            </span>
+                            Pengelolaan Pengeluaran Kas RT
+                        </h3>
+                        <button class="btn btn-primary" onclick="showAddExpenseModal()">+ Tambah Pengeluaran</button>
+                    </div>
+                    <div id="expensesList" class="admin-list">
+                        <div class="loading">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="admin-tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h3>Data Pengguna Terdaftar</h3>
+                        <div class="section-actions">
+                            <input type="text" id="userSearch" placeholder="Cari nama / NIK / email">
+                        </div>
+                    </div>
+                    <div id="usersList" class="admin-list">
+                        <div class="loading">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Application Detail Modal -->
+    <div id="applicationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detail Pengajuan Surat</h3>
+                <span class="close" id="closeApplicationModal">&times;</span>
+            </div>
+            <div class="modal-body" id="applicationModalBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expenseModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="expenseModalTitle">Tambah Pengeluaran</h3>
+                <span class="close" id="closeExpenseModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="expenseForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="expenseAmount">Nominal (Rp) <span class="required">*</span></label>
+                        <input type="number" id="expenseAmount" required step="any">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseCategory">Kategori</label>
+                        <input type="text" id="expenseCategory" placeholder="Contoh: Operasional, Perbaikan, dll">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="expenseDescription">Keterangan <span class="required">*</span></label>
+                        <textarea id="expenseDescription" rows="4" required placeholder="Jelaskan pengeluaran ini..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelExpenseBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">Edit Pengguna</h3>
+                <span class="close" id="closeUserModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm" class="modal-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="modalFullName">Nama Lengkap <span class="required">*</span></label>
+                            <input type="text" id="modalFullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEmail">Email <span class="required">*</span></label>
+                            <input type="email" id="modalEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalPhone">Nomor Telepon <span class="required">*</span></label>
+                            <input type="tel" id="modalPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalPlaceOfBirth">Tempat Lahir <span class="required">*</span></label>
+                            <input type="text" id="modalPlaceOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalDateOfBirth">Tanggal Lahir <span class="required">*</span></label>
+                            <input type="date" id="modalDateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalGender">Jenis Kelamin <span class="required">*</span></label>
+                            <select id="modalGender" required>
+                                <option value="laki-laki">Laki-Laki</option>
+                                <option value="perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="modalAddress">Alamat <span class="required">*</span></label>
+                            <textarea id="modalAddress" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalRT">RT</label>
+                            <input type="text" id="modalRT">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalRW">RW</label>
+                            <input type="text" id="modalRW">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalKelurahan">Kelurahan</label>
+                            <input type="text" id="modalKelurahan">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalKecamatan">Kecamatan</label>
+                            <input type="text" id="modalKecamatan">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalCity">Kota/Kabupaten</label>
+                            <input type="text" id="modalCity">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalProvince">Provinsi</label>
+                            <input type="text" id="modalProvince">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalPostalCode">Kode Pos</label>
+                            <input type="text" id="modalPostalCode">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalRole">Role</label>
+                            <select id="modalRole">
+                                <option value="user">Pengguna</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelUserEdit">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let currentUser = null;
+        let usersData = [];
+        let paymentsData = [];
+        let editingUserId = null;
+
+        // Initialize
+        async function init() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (data.user && data.user.role === 'admin') {
+                    currentUser = data.user;
+                    // Set default date
+                    document.getElementById('publishedDate').valueAsDate = new Date();
+                    loadNews();
+                    loadApplications();
+                    loadPayments();
+                    loadUsers();
+                    setupUserSearch();
+                    setupPaymentFilter();
+                    setupUserModalHandlers();
+                    setupExpenseModalHandlers();
+                } else {
+                    window.location.href = '/home';
+                }
+            } catch (error) {
+                window.location.href = '/home';
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+                
+                // Load data when tab is clicked
+                if (btn.dataset.tab === 'news') loadNews();
+                if (btn.dataset.tab === 'applications') loadApplications();
+                if (btn.dataset.tab === 'payments') {
+                    loadPayments();
+                    loadExpenses();
+                }
+                if (btn.dataset.tab === 'users') loadUsers();
+            });
+        });
+
+        // Load news
+        async function loadNews() {
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                const list = document.getElementById('newsList');
+                
+                if (data.news && data.news.length > 0) {
+                    list.innerHTML = data.news.map(item => {
+                        console.log('Admin news item:', item.title, 'image_path:', item.image_path);
+                        let imageHtml = '';
+                        if (item.image_path && item.image_path.trim() !== '') {
+                            // Clean and normalize the image path
+                            let imageSrc = item.image_path.trim();
+                            // Remove leading slashes
+                            imageSrc = imageSrc.replace(/^\/+/, '');
+                            // Ensure it starts with uploads/
+                            if (!imageSrc.startsWith('uploads/')) {
+                                imageSrc = 'uploads/' + imageSrc;
+                            }
+                            // Final path with leading slash for browser
+                            imageSrc = '/' + imageSrc;
+                            console.log('Loading admin image for:', item.title, 'Path:', imageSrc);
+                            imageHtml = `<div class="admin-news-image-container">
+                                <img src="${imageSrc}" alt="${item.title}" class="admin-news-image" 
+                                     onerror="console.error('Gambar tidak ditemukan:', '${imageSrc}'); this.parentElement.style.display='none';" 
+                                     onload="console.log('Gambar berhasil dimuat:', '${imageSrc}');">
+                            </div>`;
+                        }
+                        return `
+                        <div class="admin-item">
+                            <div class="admin-item-header">
+                                <h4>${item.title}</h4>
+                                <span class="badge">${item.type === 'news' ? 'Berita' : 'Pengumuman'}</span>
+                            </div>
+                            ${imageHtml}
+                            <p>${item.content.substring(0, 100)}...</p>
+                            <div class="admin-item-footer">
+                                <span>${formatDate(item.published_date)}</span>
+                                <button class="btn btn-small btn-danger" onclick="deleteNews(${item.id})">Hapus</button>
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="empty-message">Belum ada berita atau pengumuman</div>';
+                }
+            } catch (error) {
+                document.getElementById('newsList').innerHTML = '<div class="error-message">Gagal memuat data</div>';
+            }
+        }
+
+        // Load applications
+        async function loadApplications() {
+            try {
+                const response = await fetch('/api/letter-applications');
+                const data = await response.json();
+                const list = document.getElementById('applicationsList');
+                
+                if (data.applications && data.applications.length > 0) {
+                    list.innerHTML = data.applications.map(app => {
+                        const summary = window.formatLetterDetailSummary ? formatLetterDetailSummary(app.letter_type, app.details) : '';
+                        return `
+                        <div class="admin-item">
+                            <div class="admin-item-header">
+                                <h4>${window.getLetterTypeName ? getLetterTypeName(app.letter_type) : app.letter_type}</h4>
+                                <span class="status-badge status-${app.status}">${getStatusName(app.status)}</span>
+                            </div>
+                            <div class="admin-item-info">
+                                <p><strong>ID Pengajuan:</strong> ${app.application_id}</p>
+                                <p><strong>NIK:</strong> ${app.user_nik}</p>
+                                <p><strong>Nama:</strong> ${app.user_name || '-'}</p>
+                                <p><strong>Tujuan:</strong> ${app.purpose || '-'}</p>
+                                ${summary ? `<p><strong>Ringkasan:</strong> ${summary}</p>` : ''}
+                            </div>
+                            <div class="admin-item-footer">
+                                <span>${formatDate(app.created_at)}</span>
+                                <div>
+                                    <button class="btn btn-small btn-primary" onclick="viewApplication(${app.id})">Detail</button>
+                                    ${app.status === 'pending' ? `
+                                        <button class="btn btn-small btn-success" onclick="approveApplication(${app.id})">Setujui</button>
+                                        <button class="btn btn-small btn-danger" onclick="rejectApplication(${app.id})">Tolak</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="empty-message">Belum ada pengajuan surat</div>';
+                }
+            } catch (error) {
+                document.getElementById('applicationsList').innerHTML = '<div class="error-message">Gagal memuat data</div>';
+            }
+        }
+
+        async function loadUsers() {
+            const list = document.getElementById('usersList');
+            if (!list) return;
+            list.innerHTML = '<div class="loading">Memuat data...</div>';
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                if (response.ok) {
+                    usersData = data.users || [];
+                    renderUsersList(usersData);
+                } else {
+                    list.innerHTML = `<div class="error-message">${data.error || 'Gagal memuat pengguna'}</div>`;
+                }
+            } catch (error) {
+                list.innerHTML = '<div class="error-message">Gagal memuat pengguna</div>';
+            }
+        }
+
+        async function loadPayments() {
+            const list = document.getElementById('paymentsList');
+            if (!list) return;
+            list.innerHTML = '<div class="loading">Memuat data...</div>';
+            try {
+                const response = await fetch('/api/payments/all');
+                const data = await response.json();
+                if (response.ok) {
+                    paymentsData = data.payments || [];
+                    renderPaymentsList(getCurrentPaymentFilter());
+                } else {
+                    list.innerHTML = `<div class="error-message">${data.error || 'Gagal memuat pembayaran'}</div>`;
+                }
+            } catch (error) {
+                list.innerHTML = '<div class="error-message">Gagal memuat pembayaran</div>';
+            }
+        }
+
+        function getCurrentPaymentFilter() {
+            const select = document.getElementById('paymentStatusFilter');
+            return select ? select.value : 'all';
+        }
+
+        function renderPaymentsList(filter = 'all') {
+            const list = document.getElementById('paymentsList');
+            if (!list) return;
+            if (!paymentsData || paymentsData.length === 0) {
+                list.innerHTML = '<div class="empty-message">Belum ada pembayaran</div>';
+                return;
+            }
+
+            const filtered = paymentsData.filter(payment => {
+                if (filter === 'all') return true;
+                return payment.status === filter;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-message">Tidak ada pembayaran dengan filter ini</div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(payment => `
+                <div class="admin-item">
+                    <div class="admin-item-header">
+                        <h4>${payment.user_name || payment.user_nik || '-'}</h4>
+                        <span class="status-badge status-${payment.status}">${getStatusName(payment.status)}</span>
+                    </div>
+                    <div class="admin-item-info">
+                        <p><strong>NIK:</strong> ${payment.user_nik || '-'}</p>
+                        <p><strong>Periode Iuran:</strong> ${payment.period}</p>
+                        <p><strong>Nominal:</strong> ${formatCurrency(payment.amount)}</p>
+                        <p><strong>Metode Pembayaran:</strong> ${formatPaymentMethod(payment.payment_method)}</p>
+                        <p><strong>Waktu Pembayaran:</strong> ${formatDate(payment.created_at)}</p>
+                        ${payment.status_notes ? `<p><strong>Catatan:</strong> ${escapeHtml(payment.status_notes)}</p>` : ''}
+                    </div>
+                    <div class="admin-item-footer">
+                        <div class="detail-links">
+                            ${payment.proof_path ? `<a href="${buildFileUrl(payment.proof_path)}" target="_blank">Lihat Bukti</a>` : '<span>Tidak ada bukti</span>'}
+                            ${payment.status === 'approved' && payment.invoice_path ? `<a href="/api/payments/${payment.id}/invoice" target="_blank">Invoice</a>` : ''}
+                        </div>
+                        ${payment.status === 'pending' ? `
+                            <div class="admin-item-actions">
+                                <button class="btn btn-small btn-success" onclick="approvePayment(${payment.id})">Setujui</button>
+                                <button class="btn btn-small btn-danger" onclick="rejectPayment(${payment.id})">Tolak</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function approvePayment(id) {
+            if (!confirm('Setujui pembayaran ini?')) return;
+            try {
+                const response = await fetch(`/api/payments/${id}/approve`, { method: 'POST' });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Pembayaran disetujui. Invoice telah dibuat.');
+                    loadPayments();
+                } else {
+                    alert(data.error || 'Gagal menyetujui pembayaran');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyetujui pembayaran');
+            }
+        }
+
+        async function rejectPayment(id) {
+            const reason = prompt('Alasan penolakan (opsional):');
+            if (reason === null) return;
+            try {
+                const response = await fetch(`/api/payments/${id}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Pembayaran ditolak.');
+                    loadPayments();
+                } else {
+                    alert(data.error || 'Gagal menolak pembayaran');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menolak pembayaran');
+            }
+        }
+
+        // Expenses Management
+        let expensesData = [];
+        let editingExpenseId = null;
+
+        async function loadExpenses() {
+            const list = document.getElementById('expensesList');
+            if (!list) return;
+            list.innerHTML = '<div class="loading">Memuat data...</div>';
+            try {
+                const response = await fetch('/api/expenses');
+                const data = await response.json();
+                if (response.ok) {
+                    expensesData = data.expenses || [];
+                    renderExpensesList();
+                } else {
+                    list.innerHTML = `<div class="error-message">${data.error || 'Gagal memuat pengeluaran'}</div>`;
+                }
+            } catch (error) {
+                list.innerHTML = '<div class="error-message">Gagal memuat pengeluaran</div>';
+            }
+        }
+
+        function renderExpensesList() {
+            const list = document.getElementById('expensesList');
+            if (!list) return;
+            
+            if (expensesData.length === 0) {
+                list.innerHTML = '<div class="empty-message">Belum ada pengeluaran</div>';
+                return;
+            }
+
+            list.innerHTML = expensesData.map(expense => `
+                <div class="admin-item">
+                    <div class="admin-item-header">
+                        <h4>${formatCurrency(expense.amount)}</h4>
+                        ${expense.category ? `<span class="badge">${expense.category}</span>` : ''}
+                    </div>
+                    <p>${escapeHtml(expense.description)}</p>
+                    <div class="admin-item-footer">
+                        <span>${formatDate(expense.created_at)}</span>
+                        <div>
+                            <button class="btn btn-small btn-primary" onclick="editExpense(${expense.id})">Edit</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteExpense(${expense.id})">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddExpenseModal() {
+            editingExpenseId = null;
+            document.getElementById('expenseModalTitle').textContent = 'Tambah Pengeluaran';
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseModal').style.display = 'block';
+        }
+
+        function editExpense(id) {
+            const expense = expensesData.find(e => e.id === id);
+            if (!expense) return;
+            
+            editingExpenseId = id;
+            document.getElementById('expenseModalTitle').textContent = 'Edit Pengeluaran';
+            document.getElementById('expenseAmount').value = expense.amount;
+            document.getElementById('expenseCategory').value = expense.category || '';
+            document.getElementById('expenseDescription').value = expense.description;
+            document.getElementById('expenseModal').style.display = 'block';
+        }
+
+        async function deleteExpense(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus pengeluaran ini?')) return;
+            
+            try {
+                const response = await fetch(`/api/expenses/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    loadExpenses();
+                } else {
+                    alert(data.error || 'Gagal menghapus pengeluaran');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menghapus pengeluaran');
+            }
+        }
+
+        // Setup expense modal handlers
+        function setupExpenseModalHandlers() {
+            const closeBtn = document.getElementById('closeExpenseModal');
+            const cancelBtn = document.getElementById('cancelExpenseBtn');
+            const modal = document.getElementById('expenseModal');
+            const form = document.getElementById('expenseForm');
+
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            if (cancelBtn) cancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            if (modal) {
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const amount = document.getElementById('expenseAmount').value;
+                    const category = document.getElementById('expenseCategory').value;
+                    const description = document.getElementById('expenseDescription').value;
+                    
+                    try {
+                        const url = editingExpenseId 
+                            ? `/api/expenses/${editingExpenseId}`
+                            : '/api/expenses';
+                        const method = editingExpenseId ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ amount, category, description })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            modal.style.display = 'none';
+                            loadExpenses();
+                        } else {
+                            alert(data.error || 'Gagal menyimpan pengeluaran');
+                        }
+                    } catch (error) {
+                        alert('Terjadi kesalahan saat menyimpan pengeluaran');
+                    }
+                });
+            }
+        }
+
+        function renderUsersList(users) {
+            const list = document.getElementById('usersList');
+            if (!list) return;
+            if (!users || users.length === 0) {
+                list.innerHTML = '<div class="empty-message">Belum ada pengguna terdaftar</div>';
+                return;
+            }
+
+            list.innerHTML = users.map(user => `
+                <div class="admin-item">
+                    <div class="admin-item-header">
+                        <h4>${user.full_name || '-'}</h4>
+                        <span class="badge">${user.role === 'admin' ? 'Admin' : 'Pengguna'}</span>
+                    </div>
+                    <div class="admin-item-info">
+                        <p><strong>NIK:</strong> ${user.nik}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Nomor Telepon:</strong> ${user.phone}</p>
+                        <p><strong>Tempat/Tgl Lahir:</strong> ${(user.place_of_birth || '-')}, ${user.date_of_birth || '-'}</p>
+                        <p><strong>Jenis Kelamin:</strong> ${formatGender(user.gender)}</p>
+                        <p><strong>Alamat:</strong> ${user.address || '-'}</p>
+                    </div>
+                    <div class="admin-item-footer">
+                        <span>Terdaftar: ${formatDate(user.created_at)}</span>
+                        <div>
+                            <button class="btn btn-small btn-secondary" onclick="handleEditUser(${user.id})">Edit</button>
+                            <button class="btn btn-small btn-danger" onclick="handleDeleteUser(${user.id})">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupPaymentFilter() {
+            const filterSelect = document.getElementById('paymentStatusFilter');
+            if (!filterSelect) return;
+            filterSelect.addEventListener('change', (e) => {
+                renderPaymentsList(e.target.value);
+            });
+        }
+
+        function setupUserSearch() {
+            const searchInput = document.getElementById('userSearch');
+            if (!searchInput) return;
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = usersData.filter(user => {
+                    const tokens = [
+                        user.full_name || '',
+                        user.nik || '',
+                        user.email || '',
+                        user.phone || ''
+                    ].join(' ').toLowerCase();
+                    return tokens.includes(term);
+                });
+                renderUsersList(filtered);
+            });
+        }
+
+        function setupUserModalHandlers() {
+            const closeBtn = document.getElementById('closeUserModal');
+            const cancelBtn = document.getElementById('cancelUserEdit');
+            const modal = document.getElementById('userModal');
+            const form = document.getElementById('userForm');
+
+            if (closeBtn) closeBtn.addEventListener('click', closeUserModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeUserModal);
+            if (modal) {
+                window.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        closeUserModal();
+                    }
+                });
+            }
+            if (form) {
+                form.addEventListener('submit', handleUserFormSubmit);
+            }
+        }
+
+        function openUserModal(user) {
+            editingUserId = user.id;
+            document.getElementById('modalFullName').value = user.full_name || '';
+            document.getElementById('modalEmail').value = user.email || '';
+            document.getElementById('modalPhone').value = user.phone || '';
+            document.getElementById('modalPlaceOfBirth').value = user.place_of_birth || '';
+            document.getElementById('modalDateOfBirth').value = formatDateInputValue(user.date_of_birth || '');
+            document.getElementById('modalGender').value = user.gender || 'laki-laki';
+            document.getElementById('modalAddress').value = user.address || '';
+            document.getElementById('modalRT').value = user.rt || '';
+            document.getElementById('modalRW').value = user.rw || '';
+            document.getElementById('modalKelurahan').value = user.kelurahan || '';
+            document.getElementById('modalKecamatan').value = user.kecamatan || '';
+            document.getElementById('modalCity').value = user.city || '';
+            document.getElementById('modalProvince').value = user.province || '';
+            document.getElementById('modalPostalCode').value = user.postal_code || '';
+            document.getElementById('modalRole').value = user.role || 'user';
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        function closeUserModal() {
+            editingUserId = null;
+            const form = document.getElementById('userForm');
+            if (form) form.reset();
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        async function handleUserFormSubmit(e) {
+            e.preventDefault();
+            if (!editingUserId) return;
+
+            const payload = {
+                full_name: document.getElementById('modalFullName').value,
+                email: document.getElementById('modalEmail').value,
+                phone: document.getElementById('modalPhone').value,
+                place_of_birth: document.getElementById('modalPlaceOfBirth').value,
+                date_of_birth: document.getElementById('modalDateOfBirth').value,
+                gender: document.getElementById('modalGender').value,
+                address: document.getElementById('modalAddress').value,
+                rt: document.getElementById('modalRT').value,
+                rw: document.getElementById('modalRW').value,
+                kelurahan: document.getElementById('modalKelurahan').value,
+                kecamatan: document.getElementById('modalKecamatan').value,
+                city: document.getElementById('modalCity').value,
+                province: document.getElementById('modalProvince').value,
+                postal_code: document.getElementById('modalPostalCode').value,
+                role: document.getElementById('modalRole').value
+            };
+
+            try {
+                const response = await fetch(`/api/users/${editingUserId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    closeUserModal();
+                    loadUsers();
+                    alert('Data pengguna berhasil diperbarui');
+                } else {
+                    alert(data.error || 'Gagal memperbarui pengguna');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat memperbarui pengguna');
+            }
+        }
+
+        async function handleDeleteUser(userId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return;
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    loadUsers();
+                    alert('Pengguna berhasil dihapus');
+                } else {
+                    alert(data.error || 'Gagal menghapus pengguna');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menghapus pengguna');
+            }
+        }
+
+        function handleEditUser(userId) {
+            const user = usersData.find(u => u.id === userId);
+            if (!user) return;
+            openUserModal(user);
+        }
+
+        // Image preview
+        document.getElementById('newsImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Submit news form
+        document.getElementById('newsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('newsTitle').value);
+            formData.append('content', document.getElementById('newsContent').value);
+            formData.append('type', document.getElementById('newsType').value);
+            formData.append('published_date', document.getElementById('publishedDate').value);
+            
+            const imageFile = document.getElementById('newsImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                const response = await fetch('/api/news', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Berita/Pengumuman berhasil dipublikasikan!');
+                    document.getElementById('newsForm').reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                    document.getElementById('publishedDate').valueAsDate = new Date();
+                    loadNews();
+                } else {
+                    alert(data.error || 'Gagal mempublikasikan');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan');
+            }
+        });
+
+        // View application
+        async function viewApplication(id) {
+            try {
+                const response = await fetch(`/api/letter-applications/${id}`);
+                const data = await response.json();
+                if (data.application) {
+                    const app = data.application;
+                    const detailEntries = window.getLetterDetailEntries ? getLetterDetailEntries(app.letter_type, app.details) : [];
+                    const detailList = detailEntries.length ? `
+                        <div class="detail-list">
+                            ${detailEntries.map(entry => `
+                                <div class="detail-row">
+                                    <span class="detail-label">${entry.label}</span>
+                                    <span>${entry.value || '-'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '';
+                    document.getElementById('applicationModalBody').innerHTML = `
+                        <div class="application-detail">
+                            <p><strong>ID Pengajuan:</strong> ${app.application_id}</p>
+                            <p><strong>Jenis Surat:</strong> ${window.getLetterTypeName ? getLetterTypeName(app.letter_type) : app.letter_type}</p>
+                            <p><strong>NIK:</strong> ${app.user_nik}</p>
+                            <p><strong>Nama:</strong> ${app.user_name || '-'}</p>
+                            <p><strong>Tujuan:</strong> ${app.purpose || '-'}</p>
+                            <p><strong>Status:</strong> ${getStatusName(app.status)}</p>
+                            ${detailList}
+                            ${app.attachment_path ? `<p><strong>Lampiran:</strong> <a href="${buildFileUrl(app.attachment_path)}" target="_blank">Lihat</a></p>` : ''}
+                            ${app.pdf_path ? `<p><strong>Surat PDF:</strong> <a href="/api/letter-applications/${app.id}/download" target="_blank">Lihat</a></p>` : ''}
+                        </div>
+                    `;
+                    document.getElementById('applicationModal').style.display = 'block';
+                }
+            } catch (error) {
+                alert('Gagal memuat detail');
+            }
+        }
+
+        async function saveCustomLetterContent(applicationId) {
+            const textarea = document.getElementById('customLetterContent');
+            if (!textarea) return;
+            const payload = { custom_content: textarea.value };
+            try {
+                const response = await fetch(`/api/letter-applications/${applicationId}/custom-content`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Isi surat berhasil disimpan');
+                    loadApplications();
+                } else {
+                    alert(data.error || 'Gagal menyimpan isi surat');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan isi surat');
+            }
+        }
+
+        // Approve application
+        async function approveApplication(id) {
+            if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan ini?')) return;
+            
+            try {
+                const response = await fetch(`/api/letter-applications/${id}/approve`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Pengajuan disetujui! Surat akan segera dibuat.');
+                    loadApplications();
+                } else {
+                    alert(data.error || 'Gagal menyetujui');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan');
+            }
+        }
+
+        // Reject application
+        async function rejectApplication(id) {
+            const notes = prompt('Masukkan alasan penolakan (opsional):');
+            if (notes === null) return;
+            
+            try {
+                const response = await fetch(`/api/letter-applications/${id}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Pengajuan ditolak');
+                    loadApplications();
+                } else {
+                    alert(data.error || 'Gagal menolak');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan');
+            }
+        }
+
+        // Delete news
+        async function deleteNews(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus berita/pengumuman ini?')) return;
+            
+            try {
+                const response = await fetch(`/api/news/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    loadNews();
+                } else {
+                    alert('Gagal menghapus');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan');
+            }
+        }
+
+        // Close modal
+        document.getElementById('closeApplicationModal').addEventListener('click', () => {
+            document.getElementById('applicationModal').style.display = 'none';
+        });
+
+        function getStatusName(status) {
+            const statuses = {
+                'pending': 'Menunggu',
+                'approved': 'Disetujui',
+                'rejected': 'Ditolak'
+            };
+            return statuses[status] || status;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function formatGender(value) {
+            if (!value) return '-';
+            const normalized = value.toLowerCase();
+            if (normalized === 'laki-laki') return 'Laki-Laki';
+            if (normalized === 'perempuan') return 'Perempuan';
+            return value;
+        }
+
+        function formatPaymentMethod(value) {
+            if (!value) return '-';
+            if (value === 'cash') return 'Tunai';
+            if (value === 'transfer') return 'Transfer';
+            return value;
+        }
+
+        function formatCurrency(amount) {
+            if (amount === null || amount === undefined) return '-';
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(Number(amount));
+        }
+
+        function escapeHtml(value = '') {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDateInputValue(value) {
+            if (!value) return '';
+            // Jika sudah dalam format YYYY-MM-DD, kembalikan apa adanya
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().slice(0, 10);
+        }
+
+        function buildFileUrl(pathValue) {
+            if (!pathValue) return '';
+            const normalized = String(pathValue).replace(/\\/g, '/');
+            if (normalized.startsWith('/')) return normalized;
+            return '/' + normalized;
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        window.handleEditUser = handleEditUser;
+        window.handleDeleteUser = handleDeleteUser;
+        window.saveCustomLetterContent = saveCustomLetterContent;
+        window.approvePayment = approvePayment;
+        window.rejectPayment = rejectPayment;
+
+        init();
+    </script>
+</body>
+</html>
+
